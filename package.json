@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "codehub",
   "private": true,
   "scripts": {
     "build": "turbo run build",

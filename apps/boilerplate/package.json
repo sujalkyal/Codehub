@@ -1,5 +1,5 @@
 {
-  "name": "docs",
+  "name": "boilerplate",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -11,18 +11,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ui": "*",
+    "@repo/db": "*",
     "next": "^15.3.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
-    "@types/react-dom": "19.1.1",
-    "eslint": "^9.30.0",
-    "typescript": "5.8.2"
+    "@types/react-dom": "19.1.1"
   }
 }

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,10 +7,109 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int          @id @default(autoincrement())
+  username     String       @unique
+  email        String       @unique
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  submissions  Submission[]
+}
+
+model Problem {
+  id           Int          @id @default(autoincrement())
+  title        String
+  slug         String       @unique
+  description  String
+  inputFormat  String
+  outputFormat String
+  constraints  String
+  sampleInput  String
+  sampleOutput String
+  difficulty   Difficulty
+  createdAt    DateTime     @default(now())
+
+  testCases    TestCase[]
+  submissions  Submission[]
+  tags         ProblemTag[]
+}
+
+model TestCase {
+  id             Int       @id @default(autoincrement())
+  problemId      Int
+  inputUrl       String    // S3 URL for input
+  outputUrl      String    // S3 URL for expected output
+  isSample       Boolean   @default(false)
+
+  problem        Problem   @relation(fields: [problemId], references: [id])
+  results        SubmissionTestCaseResult[]
+}
+
+model Tag {
+  id        Int          @id @default(autoincrement())
+  name      String       @unique
+  problems  ProblemTag[]
+}
+
+model ProblemTag {
+  id        Int      @id @default(autoincrement())
+  problemId Int
+  tagId     Int
+
+  problem   Problem @relation(fields: [problemId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@unique([problemId, tagId])
+}
+
+model Language {
+  id            Int       @id @default(autoincrement())
+  judge0Id      Int       @unique   // Maps to Judge0's language_id
+  name          String
+  version       String?
+  fileExtension String?
+
+  submissions   Submission[]
+}
+
+model Submission {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  problemId      Int
+  languageId     Int
+  code           String
+  token          String     // Judge0 token
+  statusId       Int        // Judge0 status_id (1 = AC, 3 = CE, etc.)
+  stdout         String?
+  stderr         String?
+  compileOutput  String?
+  message        String?
+  time           String?    // Judge0 returns time as string, e.g., "0.123"
+  memory         Int?       // Memory in KB
+  createdAt      DateTime   @default(now())
+
+  user           User       @relation(fields: [userId], references: [id])
+  problem        Problem    @relation(fields: [problemId], references: [id])
+  language       Language   @relation(fields: [languageId], references: [id])
+  results        SubmissionTestCaseResult[]
+}
+
+
+
+model SubmissionTestCaseResult {
+  id           Int       @id @default(autoincrement())
+  submissionId Int
+  testCaseId   Int
+  passed       Boolean
+
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  testCase     TestCase   @relation(fields: [testCaseId], references: [id])
+
+  @@unique([submissionId, testCaseId])
 }

@@ -24,7 +24,7 @@ model User {
 
 model Problem {
   id           Int          @id @default(autoincrement())
-  title        String
+  title        String       @unique
   slug         String       @unique
   description  String
   inputFormat  String
@@ -34,22 +34,38 @@ model Problem {
   sampleOutput String
   difficulty   Difficulty
   createdAt    DateTime     @default(now())
-
-  testCases    TestCase[]
+  // testCases    String?      // JSON string for test cases, if needed
+  // testCases    TestCase[]
   submissions  Submission[]
   tags         ProblemTag[]
+
+  boilerplates ProblemBoilerplate[] // ← Add this line
 }
 
-model TestCase {
-  id             Int       @id @default(autoincrement())
-  problemId      Int
-  inputUrl       String    // S3 URL for input
-  outputUrl      String    // S3 URL for expected output
-  isSample       Boolean   @default(false)
+model ProblemBoilerplate {
+  id         Int      @id @default(autoincrement())
+  problemId  Int
+  languageId Int
+  code       String   @db.Text
+  fullcode   String?  @db.Text
 
-  problem        Problem   @relation(fields: [problemId], references: [id])
-  results        SubmissionTestCaseResult[]
+  problem    Problem  @relation(fields: [problemId], references: [id])
+  language   Language @relation(fields: [languageId], references: [id])
+
+  @@unique([problemId, languageId]) // Ensure only one boilerplate per language per problem
 }
+
+
+// model TestCase {
+//   id             Int       @id @default(autoincrement())
+//   problemId      Int
+//   inputUrl       String    // S3 URL for input
+//   outputUrl      String    // S3 URL for expected output
+//   isSample       Boolean   @default(false)
+
+//   problem        Problem   @relation(fields: [problemId], references: [id])
+//   results        SubmissionTestCaseResult[]
+// }
 
 model Tag {
   id        Int          @id @default(autoincrement())
@@ -76,6 +92,7 @@ model Language {
   fileExtension String?
 
   submissions   Submission[]
+  boilerplates  ProblemBoilerplate[] // ← Add this line
 }
 
 model Submission {
@@ -103,11 +120,11 @@ model Submission {
 model SubmissionTestCaseResult {
   id           Int       @id @default(autoincrement())
   submissionId Int
-  testCaseId   Int
+  // testCaseId   Int
   passed       Boolean
 
   submission   Submission @relation(fields: [submissionId], references: [id])
-  testCase     TestCase   @relation(fields: [testCaseId], references: [id])
+  // testCase     TestCase   @relation(fields: [testCaseId], references: [id])
 
-  @@unique([submissionId, testCaseId])
+  @@unique([submissionId])
 }

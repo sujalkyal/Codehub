@@ -15,9 +15,9 @@ enum Difficulty {
 
 model User {
   id           Int          @id @default(autoincrement())
-  username     String       @unique
+  username     String       @unique @default("temp_username") // Temporary default
   email        String       @unique
-  passwordHash String
+  passwordHash String       @default("temp_password")         // Temporary default
   createdAt    DateTime     @default(now())
   submissions  Submission[]
 }
@@ -99,8 +99,6 @@ model Submission {
   language       Language   @relation(fields: [languageId], references: [id])
   results        SubmissionTestCaseResult[]
 }
-
-
 
 model SubmissionTestCaseResult {
   id           Int       @id @default(autoincrement())

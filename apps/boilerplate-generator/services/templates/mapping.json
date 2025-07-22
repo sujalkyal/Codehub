@@ -1,0 +1,92 @@
+{
+  "int": {
+    "python": "int",
+    "cpp": "int",
+    "java": "int"
+  },
+  "long": {
+    "python": "int",
+    "cpp": "long long",
+    "java": "long"
+  },
+  "float": {
+    "python": "float",
+    "cpp": "float",
+    "java": "float"
+  },
+  "double": {
+    "python": "float",
+    "cpp": "double",
+    "java": "double"
+  },
+  "bool": {
+    "python": "bool",
+    "cpp": "bool",
+    "java": "boolean"
+  },
+  "char": {
+    "python": "str",
+    "cpp": "char",
+    "java": "char"
+  },
+  "string": {
+    "python": "str",
+    "cpp": "std::string",
+    "java": "String"
+  },
+  "list<int>": {
+    "python": "List[int]",
+    "cpp": "vector<int>",
+    "java": "List<Integer>"
+  },
+  "list<long>": {
+    "python": "List[int]",
+    "cpp": "vector<long long>",
+    "java": "List<Long>"
+  },
+  "list<float>": {
+    "python": "List[float]",
+    "cpp": "vector<float>",
+    "java": "List<Float>"
+  },
+  "list<double>": {
+    "python": "List[float]",
+    "cpp": "vector<double>",
+    "java": "List<Double>"
+  },
+  "list<string>": {
+    "python": "List[str]",
+    "cpp": "vector<std::string>",
+    "java": "List<String>"
+  },
+  "dict<string,int>": {
+    "python": "Dict[str, int]",
+    "cpp": "map<string, int>",
+    "java": "Map<String, Integer>"
+  },
+  "dict<string,string>": {
+    "python": "Dict[str, str]",
+    "cpp": "map<string, string>",
+    "java": "Map<String, String>"
+  },
+  "tuple<int,int>": {
+    "python": "Tuple[int, int]",
+    "cpp": "pair<int, int>",
+    "java": "int[]" 
+  },
+  "tuple<string,int>": {
+    "python": "Tuple[str, int]",
+    "cpp": "pair<string, int>",
+    "java": "Object[]"
+  },
+  "list<list<int>>": {
+    "python": "List[List[int]]",
+    "cpp": "vector<vector<int>>",
+    "java": "List<List<Integer>>"
+  },
+  "list<list<string>>": {
+    "python": "List[List[str]]",
+    "cpp": "vector<vector<std::string>>",
+    "java": "List<List<String>>"
+  }
+}

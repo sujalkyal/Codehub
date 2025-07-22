@@ -6,22 +6,15 @@ const router = express.Router();
 
 const payloadSchema = z.object({
   title: z.string(),
-  slug: z.string(),
   description: z.string(),
+  structure: z.string(),
   inputFormat: z.string(),
   outputFormat: z.string(),
   constraints: z.string(),
   sampleInput: z.string(),
   sampleOutput: z.string(),
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
-  tags: z.array(z.string()),
-  boilerplates: z.array(
-    z.object({
-      languageId: z.number(),
-      code: z.string(),
-      fullcode: z.string().optional(),
-    })
-  )
+  tags: z.array(z.string())
 });
 
 router.post("/", async (req, res) => {

@@ -26,6 +26,7 @@ model Problem {
   id           Int          @id @default(autoincrement())
   title        String       @unique
   slug         String       @unique
+  structure    String       // structure of the problem used for code generation
   description  String
   inputFormat  String
   outputFormat String
@@ -39,15 +40,15 @@ model Problem {
   submissions  Submission[]
   tags         ProblemTag[]
 
-  boilerplates ProblemBoilerplate[] // ← Add this line
+  boilerplates ProblemBoilerplate[]
 }
 
 model ProblemBoilerplate {
   id         Int      @id @default(autoincrement())
   problemId  Int
   languageId Int
-  code       String   @db.Text
-  fullcode   String?  @db.Text
+  code       String   @db.Text    // Boilerplate code for the problem in the specific language
+  fullcode   String?  @db.Text    // Full boilerplate code (including imports, etc.)
 
   problem    Problem  @relation(fields: [problemId], references: [id])
   language   Language @relation(fields: [languageId], references: [id])
@@ -87,12 +88,12 @@ model ProblemTag {
 model Language {
   id            Int       @id @default(autoincrement())
   judge0Id      Int       @unique   // Maps to Judge0's language_id
-  name          String
+  name          String    @unique
   version       String?
   fileExtension String?
 
   submissions   Submission[]
-  boilerplates  ProblemBoilerplate[] // ← Add this line
+  boilerplates  ProblemBoilerplate[]
 }
 
 model Submission {

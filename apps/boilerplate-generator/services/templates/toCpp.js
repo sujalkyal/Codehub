@@ -72,7 +72,7 @@ function mapType(type) {
 
 function generateFunctionBoilerplate(func) {
   const args = func.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
-  return `${mapType(func.output)} ${func.name}(${args}) {\n    // Write your code here\n}`;
+  return `${mapType(func.output)} ${func.name}(${args}) {\n  ${mapType(func.output)} ans;\n  // Write your code here\n return ans;\n}`;
 }
 
 function generateClassBoilerplate(cls) {
@@ -95,7 +95,25 @@ function generateBoilerplate(parsed) {
   });
   return code.trim();
 }
-
+function generateInputCode(input) {
+  const type = mapType(input.type);
+  const name = input.name;
+  if (type.startsWith("vector<vector<")) {
+    return `    int ${name}_rows, ${name}_cols;\n` +
+           `    cin >> ${name}_rows >> ${name}_cols;\n` +
+           `    ${type} ${name}(${name}_rows, vector<${type.match(/<([^<>]+)>/g).pop().slice(1, -1)}>(${name}_cols));\n` +
+           `    for(int i = 0; i < ${name}_rows; ++i)\n` +
+           `        for(int j = 0; j < ${name}_cols; ++j)\n` +
+           `            cin >> ${name}[i][j];\n`;
+  } else if (type.startsWith("vector<")) {
+    return `    int ${name}_size;\n` +
+           `    cin >> ${name}_size;\n` +
+           `    ${type} ${name}(${name}_size);\n` +
+           `    for(int i = 0; i < ${name}_size; ++i) cin >> ${name}[i];\n`;
+  } else {
+    return `    ${type} ${name};\n    cin >> ${name};\n`;
+  }
+}
 function generateFullBoilerplate(parsed) {
   let includes = ["#include <iostream>", "#include <vector>", "#include <string>", "#include <map>"];
   let code = includes.join("\n") + "\nusing namespace std;\n\n";
@@ -106,7 +124,7 @@ function generateFullBoilerplate(parsed) {
   if (mainFunc) {
     // Generate input code
     mainFunc.inputs.forEach(inp => {
-      code += `    ${mapType(inp.type)} ${inp.name};\n    cin >> ${inp.name};\n`;
+      code += generateInputCode(inp);
     });
     // Call function/class method
     let call;

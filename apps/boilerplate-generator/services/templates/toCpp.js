@@ -72,7 +72,7 @@ function mapType(type) {
 
 function generateFunctionBoilerplate(func) {
   const args = func.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
-  return `${mapType(func.output)} ${func.name}(${args}) {\n  ${mapType(func.output)} ans;\n  // Write your code here\n return ans;\n}`;
+  return `${mapType(func.output)} ${func.name}(${args}) {\n  // Write your code here \n}`;
 }
 
 function generateClassBoilerplate(cls) {

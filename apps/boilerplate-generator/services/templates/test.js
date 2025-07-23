@@ -4,7 +4,7 @@ import { generateCppBoilerplates } from "./toCpp.js";
 
 const structure = `
 Function: minElement
-Input: int n, list<int> arr
+Input: int n, int m, list<list<int>> arr
 Output: list<list<int>>
 `;
 

@@ -111,6 +111,9 @@ function generateInputCode(input, knownSizes = {}) {
     // 2D vector
     const sizeVars = Object.keys(knownSizes);
     const [rowsVar, colsVar] = sizeVars.slice(-2); // use last 2 known scalars
+    if (!rowsVar || !colsVar) {
+      return `    // ERROR: Unable to infer sizes for 2D vector '${name}'\n`;
+    }
     const innerType = type.match(/<([^<>]+)>/g).pop().slice(1, -1);
     return (
       `    ${type} ${name}(${rowsVar}, vector<${innerType}>(${colsVar}));\n` +

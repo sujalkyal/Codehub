@@ -105,28 +105,33 @@ function generateFullBoilerplate(parsed) {
     "import java.io.*;"
   ];
   let code = imports.join("\n") + "\n\n";
-  code += generateBoilerplate(parsed) + "\n";
-
   code += "public class Main {\n";
+
+  // Add all functions inside Main class
+  parsed.functions.forEach(func => {
+    const args = func.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
+    code += `    public static ${mapType(func.output)} ${func.name}(${args}) {\n`;
+    code += `        // Write your code here\n`;
+    code += `        return null;\n`; // Placeholder return
+    code += `    }\n\n`;
+  });
+
   code += "    public static void main(String[] args) throws Exception {\n";
   code += "        Scanner sc = new Scanner(System.in);\n";
 
   const mainFunc = parsed.functions[0] || (parsed.classes[0]?.methods[0]);
 
   if (mainFunc) {
-    // 1. Input reading
+    // Input parsing
     let knownSizes = {};
     mainFunc.inputs.forEach(inp => {
       const type = mapType(inp.type);
       const name = inp.name;
-
-      // Add int scalars to knownSizes
       if (type === "int") knownSizes[name] = true;
-
       code += `        ${generateInputJava(inp, knownSizes)}\n`;
     });
 
-    // 2. Generate function call
+    // Function call
     let call;
     const argsList = mainFunc.inputs.map(inp => inp.name).join(", ");
     if (parsed.functions[0]) {
@@ -136,26 +141,26 @@ function generateFullBoilerplate(parsed) {
       call = `obj.${mainFunc.name}(${argsList})`;
     }
 
-    // 3. Output printing logic
     const outputType = mapType(mainFunc.output || "void");
 
-    if (outputType === "List<List<Integer>>" || outputType === "int[][]") {
-      // Format output to match C++ 2D print
+    if (outputType.startsWith("List<List<") || outputType.endsWith("[][]")) {
       code += `        var result = ${call};\n`;
-      code += "        for (var row : result) {\n";
-      code += "            for (var val : row) {\n";
-      code += "                System.out.print(val + \" \");\n";
-      code += "            }\n";
-      code += "            System.out.println();\n";
-      code += "        }\n";
-    } else if (outputType === "List<Integer>" || outputType === "int[]") {
+      code += `        for (var row : result) {\n`;
+      code += `            for (var val : row) {\n`;
+      code += `                System.out.print(val + " ");\n`;
+      code += `            }\n`;
+      code += `            System.out.println();\n`;
+      code += `        }\n`;
+    } else if (outputType.startsWith("List<") || outputType.endsWith("[]")) {
       code += `        var result = ${call};\n`;
       code += `        for (var val : result) {\n`;
       code += `            System.out.print(val + " ");\n`;
       code += `        }\n`;
       code += `        System.out.println();\n`;
-    } else {
+    } else if (outputType !== "void") {
       code += `        System.out.println(${call});\n`;
+    } else {
+      code += `        ${call};\n`;
     }
   }
 

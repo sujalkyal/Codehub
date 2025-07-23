@@ -3,9 +3,9 @@ import { generateJavaBoilerplates } from "./toJava.js";
 import { generateCppBoilerplates } from "./toCpp.js";
 
 const structure = `
-Function: minElement
-Input: int n, int m, list<list<int>> arr
-Output: list<list<int>>
+Function: sortWords
+Input: int n, list<string> words
+Output: list<string>
 `;
 
 console.log("===== Parsing Structure =====\n");

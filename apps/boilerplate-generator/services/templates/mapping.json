@@ -1,4 +1,9 @@
 {
+  "void": {
+    "python": "None",
+    "cpp": "void",
+    "java": "void"
+  },
   "int": {
     "python": "int",
     "cpp": "int",
@@ -38,6 +43,16 @@
     "python": "List[int]",
     "cpp": "vector<int>",
     "java": "List<Integer>"
+  },
+  "list<char>": {
+    "python": "List[str]",
+    "cpp": "vector<char>",
+    "java": "List<Character>"
+  },
+  "list<bool>": {
+    "python": "List[bool]",
+    "cpp": "vector<bool>",
+    "java": "List<Boolean>"
   },
   "list<long>": {
     "python": "List[int]",
@@ -79,6 +94,11 @@
     "cpp": "pair<string, int>",
     "java": "Object[]"
   },
+  "tuple<int,string>": {
+    "python": "Tuple[int, str]",
+    "cpp": "pair<int, string>",
+    "java": "Object[]"
+  },
   "list<list<int>>": {
     "python": "List[List[int]]",
     "cpp": "vector<vector<int>>",
@@ -88,5 +108,10 @@
     "python": "List[List[str]]",
     "cpp": "vector<vector<std::string>>",
     "java": "List<List<String>>"
+  },
+  "list<tuple<int,int>>": {
+    "python": "List[Tuple[int, int]]",
+    "cpp": "vector<pair<int, int>>",
+    "java": "List<int[]>"
   }
 }

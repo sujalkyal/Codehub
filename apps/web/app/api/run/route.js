@@ -4,7 +4,6 @@
 // the first 3 sample test cases and returns the results immediately.
 // It uses Judge0's synchronous `wait=true` mode and does NOT create
 // any permanent records in the database.
-
 const { NextResponse } = require('next/server');
 const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');

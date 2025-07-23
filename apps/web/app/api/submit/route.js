@@ -7,10 +7,10 @@
 
 // const { NextResponse } = require('next/server');
 // const { z } = require('zod');
-// const { PrismaClient } = require('@prisma/client');
+// import prisma from "@repo/db";
+
 // const axios = require('axios');
 
-// const prisma = new PrismaClient();
 
 // const submissionSchema = z.object({
 //   userId: z.number(),
@@ -131,10 +131,8 @@
 
 const { NextResponse } = require('next/server');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
+import prisma from "@repo/db";
 const axios = require('axios');
-
-const prisma = new PrismaClient();
 
 const submissionSchema = z.object({
   userId: z.number(),

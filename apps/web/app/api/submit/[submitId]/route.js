@@ -4,9 +4,8 @@
 // repeatedly with a submission ID to check for the final result.
 
 const { NextResponse } = require('next/server');
-const { PrismaClient } = require('@prisma/client');
+import prisma from "@repo/db";
 
-const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   try {

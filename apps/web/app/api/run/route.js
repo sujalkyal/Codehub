@@ -1,32 +1,25 @@
 // apps/web/app/api/run/route.js
 //
-// This API endpoint is for the "Run" button. It executes code against
-// the first 3 sample test cases and returns the results immediately.
-// It uses Judge0's synchronous `wait=true` mode and does NOT create
-// any permanent records in the database.
 const { NextResponse } = require('next/server');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
 const axios = require('axios');
+import prisma from "@repo/db";
 
-const prisma = new PrismaClient();
-
-// Zod schema for validating the incoming request
 const runSchema = z.object({
+  userId: z.number(),
   problemSlug: z.string(),
   languageId: z.number(),
   code: z.string(),
 });
 
-// Mock S3 function - this can be the same one used for submissions.
 async function getTestCasesFromS3(slug) {
   console.log(`Fetching MOCK test cases for slug: ${slug}`);
   if (slug === 'two-sum') {
     return [
-      { input: '2 7 11 15\n9', output: '0 1' }, // Sample 1
-      { input: '3 2 4\n6', output: '1 2' },     // Sample 2
-      { input: '3 3\n6', output: '0 1' },     // Sample 3
-      { input: '10 20\n30', output: '0 1' },   // This is a hidden test case and will be ignored by "Run"
+      { input: '2 7 11 15\n9', output: '0 1' },
+      { input: '3 2 4\n6', output: '1 2' },
+      { input: '3 3\n6', output: '0 1' },
+      { input: '10 20\n30', output: '0 1' },
     ];
   }
   return [];
@@ -41,47 +34,77 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { problemSlug, languageId, code } = parsedBody.data;
+    const { userId, problemSlug, languageId, code } = parsedBody.data;
+    
+    const problem = await prisma.problem.findUnique({ where: { slug: problemSlug } });
+    if (!problem) {
+        return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    }
 
-    // 1. Fetch all test cases and take only the first three as samples
     const allTestCases = await getTestCasesFromS3(problemSlug);
     const sampleTestCases = allTestCases.slice(0, 3);
 
     if (sampleTestCases.length === 0) {
-      return NextResponse.json({ error: 'No sample test cases found for this problem' }, { status: 404 });
+      return NextResponse.json({ error: 'No sample test cases found' }, { status: 404 });
     }
 
-    // 2. Process each sample test case synchronously
-    const results = [];
+    // 1. Create a temporary Submission record
+    const runSession = await prisma.submission.create({
+      data: {
+        userId,
+        problemId: problem.id,
+        languageId,
+        code,
+        statusId: 2, // "Processing"
+      },
+    });
+
+    // 2. Create SubmissionTestCaseResult records AND prepare the detailed map for the frontend
+    const testCaseMap = [];
+    const judge0Promises = [];
+
     for (const testCase of sampleTestCases) {
-      // Call Judge0 and wait for the result
-      console.log(`Running sample test case...`);
-      const judge0Response = await axios.post(
-        `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
-        {
-          source_code: code,
-          language_id: languageId,
-          stdin: testCase.input,
-          expected_output: testCase.output,
-        }
-      );
-
-      const resultData = judge0Response.data;
-      results.push({
-        status: resultData.status,
-        stdout: resultData.stdout,
-        stderr: resultData.stderr,
-        compile_output: resultData.compile_output,
-        expected_output: testCase.output,
-        input: testCase.input,
+      const resultRecord = await prisma.submissionTestCaseResult.create({
+        data: {
+          submissionId: runSession.id,
+          passed: null,
+        },
       });
+
+      // Add the detailed info to our map
+      testCaseMap.push({
+        submissionTestCaseResultId: resultRecord.id,
+        input: testCase.input,
+        output: testCase.output,
+      });
+
+      // Prepare the call to Judge0
+      const callbackUrl = `${process.env.WEBHOOK_URL}/api/webhook?submissionTestCaseResultId=${resultRecord.id}`;
+      judge0Promises.push(
+        axios.post(
+          `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=false`,
+          {
+            source_code: code,
+            language_id: languageId,
+            stdin: testCase.input,
+            expected_output: testCase.output,
+            callback_url: callbackUrl,
+          }
+        )
+      );
     }
 
-    // 3. Return the array of detailed results directly to the frontend
-    return NextResponse.json(results, { status: 200 });
+    // 3. Dispatch all jobs to Judge0
+    Promise.all(judge0Promises).catch(err => console.error("Error dispatching run to Judge0:", err));
+
+    // 4. Return immediately with the runId AND the detailed test case map
+    return NextResponse.json({
+        runId: runSession.id,
+        testCases: testCaseMap,
+    }, { status: 202 });
 
   } catch (error) {
-    console.error('Run Code Error:', error.response ? error.response.data : error.message);
-    return NextResponse.json({ error: 'An internal server error occurred during the run.' }, { status: 500 });
+    console.error('Run API Error:', error);
+    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
   }
 }

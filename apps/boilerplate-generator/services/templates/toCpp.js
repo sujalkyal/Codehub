@@ -3,6 +3,10 @@
 
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const mappingPath = path.join(__dirname, "mapping.json");
 const typeMapping = JSON.parse(fs.readFileSync(mappingPath, "utf-8"));
@@ -14,7 +18,7 @@ function parseStructure(structure) {
   let i = 0;
   while (i < lines.length) {
     if (lines[i].startsWith("Function:")) {
-      const func = { name: lines[i].split(":")[1].trim(), inputs: [], output: null };
+      const func = { name: lines[i].split(":")[1].trim(), inputs: [], outputType: null };
       i++;
       while (i < lines.length && (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))) {
         if (lines[i].startsWith("Input:")) {
@@ -26,7 +30,7 @@ function parseStructure(structure) {
             });
           }
         } else if (lines[i].startsWith("Output:")) {
-          func.output = lines[i].replace("Output:", "").trim();
+          func.outputType = lines[i].replace("Output:", "").trim();
         }
         i++;
       }
@@ -39,7 +43,7 @@ function parseStructure(structure) {
         i++;
         while (i < lines.length && lines[i].startsWith("-")) {
           const methodLine = lines[i].replace("-", "").trim();
-          const method = { name: methodLine, inputs: [], output: null };
+          const method = { name: methodLine, inputs: [], outputType: null };
           i++;
           while (i < lines.length && (lines[i].startsWith("Input:") || lines[i].startsWith("Output:"))) {
             if (lines[i].startsWith("Input:")) {
@@ -51,7 +55,7 @@ function parseStructure(structure) {
                 });
               }
             } else if (lines[i].startsWith("Output:")) {
-              method.output = lines[i].replace("Output:", "").trim();
+              method.outputType = lines[i].replace("Output:", "").trim();
             }
             i++;
           }
@@ -72,14 +76,14 @@ function mapType(type) {
 
 function generateFunctionBoilerplate(func) {
   const args = func.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
-  return `${mapType(func.output)} ${func.name}(${args}) {\n  // Write your code here \n}`;
+  return `${mapType(func.outputType)} ${func.name}(${args}) {\n  // Write your code here \n}`;
 }
 
 function generateClassBoilerplate(cls) {
   let code = `class ${cls.name} {\npublic:`;
   cls.methods.forEach(method => {
     const args = method.inputs.map(inp => `${mapType(inp.type)} ${inp.name}`).join(", ");
-    code += `\n    ${mapType(method.output)} ${method.name}(${args}) {\n        // Write your code here\n    }`;
+    code += `\n    ${mapType(method.outputType)} ${method.name}(${args}) {\n        // Write your code here\n    }`;
   });
   code += `\n};`;
   return code;
@@ -95,37 +99,80 @@ function generateBoilerplate(parsed) {
   });
   return code.trim();
 }
-function generateInputCode(input) {
+
+function generateInputCode(input, knownSizes = {}) {
   const type = mapType(input.type);
   const name = input.name;
-  if (type.startsWith("vector<vector<")) {
-    return `    int ${name}_rows, ${name}_cols;\n` +
-           `    cin >> ${name}_rows >> ${name}_cols;\n` +
-           `    ${type} ${name}(${name}_rows, vector<${type.match(/<([^<>]+)>/g).pop().slice(1, -1)}>(${name}_cols));\n` +
-           `    for(int i = 0; i < ${name}_rows; ++i)\n` +
-           `        for(int j = 0; j < ${name}_cols; ++j)\n` +
-           `            cin >> ${name}[i][j];\n`;
-  } else if (type.startsWith("vector<")) {
-    return `    int ${name}_size;\n` +
-           `    cin >> ${name}_size;\n` +
-           `    ${type} ${name}(${name}_size);\n` +
-           `    for(int i = 0; i < ${name}_size; ++i) cin >> ${name}[i];\n`;
-  } else {
+
+  if (["int", "string", "bool", "double", "float", "char", "long"].includes(type)) {
+    // Scalar
     return `    ${type} ${name};\n    cin >> ${name};\n`;
+  } else if (type.startsWith("vector<vector<")) {
+    // 2D vector
+    const sizeVars = Object.keys(knownSizes);
+    const [rowsVar, colsVar] = sizeVars.slice(-2); // use last 2 known scalars
+    if (!rowsVar || !colsVar) {
+      return `    // ERROR: Unable to infer sizes for 2D vector '${name}'\n`;
+    }
+    const innerType = type.match(/<([^<>]+)>/g).pop().slice(1, -1);
+    return (
+      `    ${type} ${name}(${rowsVar}, vector<${innerType}>(${colsVar}));\n` +
+      `    for(int i = 0; i < ${rowsVar}; ++i)\n` +
+      `        for(int j = 0; j < ${colsVar}; ++j)\n` +
+      `            cin >> ${name}[i][j];\n`
+    );
+  } else if (type.startsWith("vector<")) {
+    // 1D vector
+    const sizeVar = Object.keys(knownSizes).pop(); // use last known scalar
+    return (
+      `    ${type} ${name}(${sizeVar});\n` +
+      `    for(int i = 0; i < ${sizeVar}; ++i) cin >> ${name}[i];\n`
+    );
+  } else {
+    return `    // TODO: Add custom input logic for type: ${type}\n    cin >> ${name};\n`;
   }
 }
+
+function generateOutputCode(outputType) {
+  const type = mapType(outputType); // ensure mapped to C++ equivalent
+  if (type === "int" || type === "string" || type === "bool" || type === "double" || type === "float" || type === "char" || type === "long") {
+    return `    cout << result << endl;`;
+  } else if (type.startsWith("vector<vector<")) {
+    return `
+    for (const auto& row : result) {
+        for (const auto& val : row) {
+            cout << val << " ";
+        }
+        cout << endl;
+    }`;
+  } else if (type.startsWith("vector<")) {
+    return `
+    for (const auto& val : result) {
+        cout << val << " ";
+    }
+    cout << endl;`;
+  } else {
+    return `    // TODO: Add custom print logic for type: ${type}\n    cout << "Unsupported return type" << endl;`;
+  }
+}
+
 function generateFullBoilerplate(parsed) {
-  let includes = ["#include <iostream>", "#include <vector>", "#include <string>", "#include <map>"];
-  let code = includes.join("\n") + "\nusing namespace std;\n\n";
-  code += generateBoilerplate(parsed) + "\n";
+  let includes = ["#include <bits/stdc++.h>"];
+  let code = includes.join("\n") + "\n\nusing namespace std;\n\n";
+  code += generateBoilerplate(parsed) + "\n\n";
   code += "int main() {\n";
   // For demo, just show input/output for first function or method
   let mainFunc = parsed.functions[0] || (parsed.classes[0]?.methods[0]);
   if (mainFunc) {
     // Generate input code
-    mainFunc.inputs.forEach(inp => {
-      code += generateInputCode(inp);
-    });
+    let knownSizes = {};
+    for (let i = 0; i < mainFunc.inputs.length; i++) {
+      const inp = mainFunc.inputs[i];
+      code += generateInputCode(inp, knownSizes);
+      // Store scalar values like `int n` or `int m`
+      const type = mapType(inp.type);
+      if (type === 'int') knownSizes[inp.name] = true;
+    }
     // Call function/class method
     let call;
     if (parsed.functions[0]) {
@@ -133,7 +180,8 @@ function generateFullBoilerplate(parsed) {
     } else {
       call = `${parsed.classes[0].name} obj;\n    obj.${mainFunc.name}(${mainFunc.inputs.map(inp => inp.name).join(", ")})`;
     }
-    code += `    auto result = ${call};\n    cout << result << endl;\n`;
+    code += `    auto result = ${call};\n`;
+    code += generateOutputCode(mainFunc.outputType) + "\n";
   }
   code += "    return 0;\n}";
   return code;

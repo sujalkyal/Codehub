@@ -1,9 +1,5 @@
 // apps/web/app/api/run/route.js
 //
-// This endpoint initiates a "Run" session. It creates temporary DB records
-// for the first 3 test cases, dispatches them to Judge0, and returns
-// a runId AND a detailed map of the test cases for the frontend to poll.
-
 const { NextResponse } = require('next/server');
 const { z } = require('zod');
 const axios = require('axios');

@@ -1,9 +1,9 @@
 // apps/web/app/api/submissions/route.js
 
-import { downloadFile } from "@repo/s3-client";
+import { downloadFile } from "@repo/s3-client/client";
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import prisma from "@repo/db"; // Using your shared prisma instance
+import prisma from "@repo/db/client"; // Using your shared prisma instance
 import axios from 'axios';
 
 const submissionSchema = z.object({
@@ -102,7 +102,7 @@ export async function POST(req) {
 
       // Return the axios post promise
       return axios.post(
-        `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=false`,
+        `${process.env.JUDGE0_URL}`,
         {
           source_code: code,
           language_id: languageId,

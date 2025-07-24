@@ -2,7 +2,7 @@
 
 import express from "express";
 import { z } from "zod";
-import prisma from "@repo/db";
+import prisma from "@repo/db/client";
 const router = express.Router();
 
 // Zod schema to validate Judge0 callback

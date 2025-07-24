@@ -4,11 +4,12 @@
 // intended for display on a main problems page.
 
 import { NextResponse } from 'next/server';
-import prisma from "@repo/db";
+import prisma from "@repo/db/client";
 
 export async function GET(req) {
   try {
     // 1. Fetch all problems from the database
+    console.log('Fetching all problems from the database...');
     const problems = await prisma.problem.findMany({
       // 2. Select only the necessary fields to keep the payload light
       select: {

@@ -1,5 +1,6 @@
 // apps/web/app/api/submissions/route.js
 
+import { uploadFile } from "@repo/s3-client";
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from "@repo/db"; // Using your shared prisma instance
@@ -12,7 +13,31 @@ const submissionSchema = z.object({
   code: z.string(),
 });
 
-// This can be your real S3 function or the mock one
+// ================== REAL S3 FETCHING LOGIC ==================
+// This function fetches the test cases from S3 for a given problem slug.
+
+async function getTestCasesFromS3(slug) {
+  const bucketName = process.env.BUCKET_NAME;
+  const key = `problems/${slug}/input_output.json`;
+
+  console.log(`Fetching real test cases from S3: s3://${bucketName}/${key}`);
+
+  try {
+    const jsonString = await downloadFile({ Bucket: bucketName, Key: key });
+    return JSON.parse(jsonString);
+  } catch (error) {
+    if (error.name === 'NoSuchKey') {
+      console.warn(`Test case file not found in S3 for slug: ${slug}`);
+      return [];
+    }
+    console.error(`S3 Error fetching ${key}:`, error);
+    throw new Error('Failed to fetch test cases from S3.');
+  }
+}
+// ============================================================
+
+/*
+// This is the old mock function, now commented out.
 async function getTestCasesFromS3(slug) {
   console.log(`Fetching MOCK test cases for slug: ${slug}`);
   if (slug === 'two-sum') {
@@ -24,6 +49,7 @@ async function getTestCasesFromS3(slug) {
   }
   return [];
 }
+*/
 
 export async function POST(req) {
   try {

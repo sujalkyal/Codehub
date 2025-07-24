@@ -20,14 +20,13 @@ const payloadSchema = z.object({
 router.post("/", async (req, res) => {
   try {
     const parsed = payloadSchema.parse(JSON.parse(req.body.json));
-    const inputFile = req.files?.input?.[0];
-    const outputFile = req.files?.output?.[0];
+    const inputOutputFile = req.files?.input_output?.[0];
 
-    if (!inputFile || !outputFile) {
-      return res.status(400).json({ error: "Input and Output files are required." });
+    if (!inputOutputFile) {
+      return res.status(400).json({ error: "Input file is required." });
     }
 
-    const result = await handleGeneration(parsed, inputFile, outputFile);
+    const result = await handleGeneration(parsed, inputOutputFile);
     res.status(201).json({ message: "Problem created", problemId: result.id });
   } catch (error) {
     console.error("❌ Error generating problem:", error);

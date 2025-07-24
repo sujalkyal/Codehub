@@ -9,5 +9,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "@repo/db": "*",
+    "zod": "^4.0.5",
+    "next": "^15.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
 }

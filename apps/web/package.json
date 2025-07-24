@@ -11,7 +11,10 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.25.4",
+    "@repo/s3-client": "*",
     "@repo/db": "*",
+    "zod": "^4.0.5",
     "next": "^15.3.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

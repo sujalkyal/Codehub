@@ -1,9 +1,10 @@
 // apps/web/app/api/run/route.js
-//
-const { NextResponse } = require('next/server');
-const { z } = require('zod');
-const axios = require('axios');
+
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import axios from 'axios';
 import prisma from "@repo/db";
+import { downloadFile } from "@repo/s3-client"; // Assuming this is the correct import path
 
 const runSchema = z.object({
   userId: z.number(),
@@ -12,6 +13,34 @@ const runSchema = z.object({
   code: z.string(),
 });
 
+// ================== REAL S3 FETCHING LOGIC ==================
+/**
+ * Fetches and parses the test case JSON file from S3 for a given problem slug.
+ * @param {string} slug - The unique slug for the problem (e.g., "two-sum").
+ * @returns {Promise<Array<{input: string, output: string}>>} A promise that resolves to an array of test cases.
+ */
+async function getTestCasesFromS3(slug) {
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  const key = `problems/${slug}/input_output.json`;
+
+  console.log(`Fetching real test cases from S3: s3://${bucketName}/${key}`);
+
+  try {
+    const jsonString = await downloadFile({ Bucket: bucketName, Key: key });
+    return JSON.parse(jsonString);
+  } catch (error) {
+    if (error.name === 'NoSuchKey') {
+      console.warn(`Test case file not found in S3 for slug: ${slug}`);
+      return [];
+    }
+    console.error(`S3 Error fetching ${key}:`, error);
+    throw new Error('Failed to fetch test cases from S3.');
+  }
+}
+// ============================================================
+
+/*
+// This is the old mock function, now commented out.
 async function getTestCasesFromS3(slug) {
   console.log(`Fetching MOCK test cases for slug: ${slug}`);
   if (slug === 'two-sum') {
@@ -24,6 +53,7 @@ async function getTestCasesFromS3(slug) {
   }
   return [];
 }
+*/
 
 export async function POST(req) {
   try {
@@ -41,6 +71,7 @@ export async function POST(req) {
         return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
 
+    // This line now calls the real S3 function
     const allTestCases = await getTestCasesFromS3(problemSlug);
     const sampleTestCases = allTestCases.slice(0, 3);
 
@@ -59,7 +90,7 @@ export async function POST(req) {
       },
     });
 
-    // 2. Create SubmissionTestCaseResult records AND prepare the detailed map for the frontend
+    // 2. Create SubmissionTestCaseResult records and prepare the detailed map for the frontend
     const testCaseMap = [];
     const judge0Promises = [];
 
@@ -71,14 +102,12 @@ export async function POST(req) {
         },
       });
 
-      // Add the detailed info to our map
       testCaseMap.push({
         submissionTestCaseResultId: resultRecord.id,
         input: testCase.input,
         output: testCase.output,
       });
 
-      // Prepare the call to Judge0
       const callbackUrl = `${process.env.WEBHOOK_URL}/api/webhook?submissionTestCaseResultId=${resultRecord.id}`;
       judge0Promises.push(
         axios.post(
@@ -97,7 +126,7 @@ export async function POST(req) {
     // 3. Dispatch all jobs to Judge0
     Promise.all(judge0Promises).catch(err => console.error("Error dispatching run to Judge0:", err));
 
-    // 4. Return immediately with the runId AND the detailed test case map
+    // 4. Return immediately with the runId and the detailed test case map
     return NextResponse.json({
         runId: runSession.id,
         testCases: testCaseMap,

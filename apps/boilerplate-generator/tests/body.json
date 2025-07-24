@@ -1,0 +1,12 @@
+{
+  "title": "Sum of Two Numbers",
+  "description": "Add two numbers and return the result.",
+  "structure": "Function: add\nInput: int a, int b\nOutput: int",
+  "inputFormat": "Two integers a and b",
+  "outputFormat": "Single integer: a + b",
+  "constraints": "-10^9 <= a, b <= 10^9",
+  "sampleInput": "2 3",
+  "sampleOutput": "5",
+  "difficulty": "EASY",
+  "tags": ["math", "implementation"]
+}

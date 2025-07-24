@@ -1,6 +1,13 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
+import path from "path";
 
 let s3Instance = null;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 export function getS3Client() {
   if (!s3Instance) {

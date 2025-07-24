@@ -39,22 +39,6 @@ async function getTestCasesFromS3(slug) {
 }
 // ============================================================
 
-/*
-// This is the old mock function, now commented out.
-async function getTestCasesFromS3(slug) {
-  console.log(`Fetching MOCK test cases for slug: ${slug}`);
-  if (slug === 'two-sum') {
-    return [
-      { input: '2 7 11 15\n9', output: '0 1' },
-      { input: '3 2 4\n6', output: '1 2' },
-      { input: '3 3\n6', output: '0 1' },
-      { input: '10 20\n30', output: '0 1' },
-    ];
-  }
-  return [];
-}
-*/
-
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -71,7 +55,6 @@ export async function POST(req) {
         return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
 
-    // This line now calls the real S3 function
     const allTestCases = await getTestCasesFromS3(problemSlug);
     const sampleTestCases = allTestCases.slice(0, 3);
 
@@ -87,6 +70,7 @@ export async function POST(req) {
         languageId,
         code,
         statusId: 2, // "Processing"
+        token: `run-${Date.now()}`, // Add placeholder token
       },
     });
 
@@ -97,8 +81,12 @@ export async function POST(req) {
     for (const testCase of sampleTestCases) {
       const resultRecord = await prisma.submissionTestCaseResult.create({
         data: {
-          submissionId: runSession.id,
-          passed: null,
+          passed: -1, // -1 indicates "Processing"
+          submission: {
+            connect: {
+              id: runSession.id,
+            },
+          },
         },
       });
 

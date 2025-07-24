@@ -1,10 +1,10 @@
-import { uploadFile } from "@repo/s3-client";
+import { uploadFile } from "@repo/s3-client/client";
 import { generatePythonBoilerplates } from "./templates/toPython.js";
 import { generateJavaBoilerplates } from "./templates/toJava.js";
 import { generateCppBoilerplates } from "./templates/toCpp.js";
-import prisma from "@repo/db";
+import prisma from "@repo/db/client";
 
-export async function handleGeneration(problemData, inputFile, outputFile) {
+export async function handleGeneration(problemData, inputOutputFile) {
   // create slug from title
   const slug = (problemData.title || '')
     .toLowerCase()
@@ -14,21 +14,13 @@ export async function handleGeneration(problemData, inputFile, outputFile) {
     .replace(/^-+|-+$/g, '');               // Trim leading/trailing hyphens
 
   // add input and output files to S3
-  const inputKey = `problems/${slug}/input.json`;
-  const outputKey = `problems/${slug}/output.json`;
+  const inputOutputKey = `problems/${slug}/input_output.json`;
 
   await uploadFile({
     Bucket: process.env.BUCKET_NAME,
-    Key: inputKey,
-    Body: inputFile.buffer,
-    ContentType: inputFile.mimetype
-  });
-
-  await uploadFile({
-    Bucket: process.env.BUCKET_NAME,
-    Key: outputKey,
-    Body: outputFile.buffer,
-    ContentType: outputFile.mimetype
+    Key: inputOutputKey,
+    Body: inputOutputFile.buffer,
+    ContentType: inputOutputFile.mimetype
   });
 
   // generate boilerplate and full-boilerplate code

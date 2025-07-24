@@ -1,75 +1,56 @@
-// apps/webhook/app/api/webhook/route.js
-//
-// This webhook has a single responsibility: to receive a callback from Judge0
-// and update the corresponding SubmissionTestCaseResult record in the database.
-// It does NOT update the parent Submission status.
+// Express-compatible webhook route handler
 
-const { NextResponse } = require('next/server');
-const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
+import express from "express";
+import { z } from "zod";
+import prisma from "@repo/db";
+const router = express.Router();
 
-const prisma = new PrismaClient();
-
-// Zod schema to validate the incoming callback data from Judge0.
+// Zod schema to validate Judge0 callback
 const judge0CallbackSchema = z.object({
   status: z.object({
-    id: z.number(), // The status ID (e.g., 3 for Accepted)
+    id: z.number(),
   }),
-  // We only need the status, but it's good practice to define other expected fields
   stdout: z.string().nullable(),
   stderr: z.string().nullable(),
   token: z.string(),
 });
 
-export async function POST(req) {
-  const { searchParams } = new URL(req.url);
-  const submissionTestCaseResultId = searchParams.get('submissionTestCaseResultId');
+// POST /webhook?submissionTestCaseResultId=...
+router.post("/", async (req, res) => {
+  const submissionTestCaseResultId = req.query.submissionTestCaseResultId;
 
-  // 1. Validate that the required ID is present in the URL
   if (!submissionTestCaseResultId) {
-    console.error('Webhook Error: Missing submissionTestCaseResultId query parameter.');
-    return NextResponse.json({ error: 'Missing submissionTestCaseResultId' }, { status: 400 });
+    console.error("Missing submissionTestCaseResultId");
+    return res.status(400).json({ error: "Missing submissionTestCaseResultId" });
   }
 
   const numericId = parseInt(submissionTestCaseResultId, 10);
   if (isNaN(numericId)) {
-    console.error(`Webhook Error: Invalid submissionTestCaseResultId format: ${submissionTestCaseResultId}`);
-    return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
+    console.error("Invalid ID format:", submissionTestCaseResultId);
+    return res.status(400).json({ error: "Invalid ID format" });
   }
 
   try {
-    const body = await req.json();
-    const parsedBody = judge0CallbackSchema.safeParse(body);
-
-    // 2. Validate the body of the request from Judge0
-    if (!parsedBody.success) {
-      console.error('Webhook Error: Invalid callback body from Judge0 for ID:', numericId, parsedBody.error);
-      return NextResponse.json({ error: 'Invalid callback body' }, { status: 400 });
+    const parsed = judge0CallbackSchema.safeParse(req.body);
+    if (!parsed.success) {
+      console.error("Invalid Judge0 body:", parsed.error);
+      return res.status(400).json({ error: "Invalid callback body" });
     }
 
-    const { status } = parsedBody.data;
-
-    // 3. Determine the outcome. Judge0 status ID 3 means "Accepted".
+    const { status } = parsed.data;
     const passed = status.id === 3;
 
-    // 4. Update the single SubmissionTestCaseResult record in the database.
-    // This is the webhook's only database operation.
     await prisma.submissionTestCaseResult.update({
-      where: {
-        id: numericId,
-      },
-      data: {
-        passed: passed,
-      },
+      where: { id: numericId },
+      data: { passed },
     });
 
-    console.log(`Successfully processed webhook for SubmissionTestCaseResult ID: ${numericId}. Result: ${passed ? 'Passed' : 'Failed'}`);
-
-    // 5. Acknowledge receipt to Judge0
-    return NextResponse.json({ message: 'Webhook received successfully.' }, { status: 200 });
-
+    console.log(`Webhook processed: ID ${numericId}, Result: ${passed}`);
+    return res.status(200).json({ message: "Webhook received successfully." });
   } catch (error) {
-    console.error(`Webhook Error for ID ${numericId}:`, error);
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    console.error("Internal server error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
-}
+});
+
+export default router;

@@ -1,6 +1,6 @@
 // apps/web/app/api/submissions/route.js
 
-import { uploadFile } from "@repo/s3-client";
+import { downloadFile } from "@repo/s3-client";
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from "@repo/db"; // Using your shared prisma instance

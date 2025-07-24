@@ -7,7 +7,7 @@ app.use(express.json());
 // All Judge0 webhooks should POST to /webhook?submissionTestCaseResultId=...
 app.use("/webhook", webhookRoute);
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Webhook server running on port ${PORT}`);
 });

@@ -4,7 +4,7 @@
 // identified by its unique slug.
 
 import { NextResponse } from 'next/server';
-import prisma from "@repo/db";
+import prisma from "@repo/db/client";
 
 export async function GET(req, { params }) {
   try {

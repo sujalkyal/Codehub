@@ -4,7 +4,7 @@
 // repeatedly with a submission ID to check for the final result.
 
 const { NextResponse } = require('next/server');
-import prisma from "@repo/db";
+import prisma from "@repo/db/client";
 
 
 export async function GET(req, { params }) {

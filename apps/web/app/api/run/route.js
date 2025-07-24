@@ -3,8 +3,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import axios from 'axios';
-import prisma from "@repo/db";
-import { downloadFile } from "@repo/s3-client"; // Assuming this is the correct import path
+import prisma from "@repo/db/client";
+import { downloadFile } from "@repo/s3-client/client"; // Assuming this is the correct import path
 
 const runSchema = z.object({
   userId: z.number(),

@@ -4,7 +4,7 @@
 // It returns the results and cleans up the database entry upon completion.
 
 const { NextResponse } = require('next/server');
-import prisma from "@repo/db";
+import prisma from "@repo/db/client";
 
 export async function GET(req, { params }) {
   try {

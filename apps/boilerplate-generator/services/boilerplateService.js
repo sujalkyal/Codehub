@@ -5,6 +5,14 @@ import { generateCppBoilerplates } from "./templates/toCpp.js";
 import prisma from "@repo/db/client";
 
 export async function handleGeneration(problemData, inputOutputFile) {
+  // Fix double-escaped newlines in relevant fields
+  ["structure", "inputFormat", "outputFormat", "constraints", "sampleInput", "sampleOutput"].forEach(field => {
+    if (problemData[field]) {
+      problemData[field] = problemData[field].replace(/\\n/g, '\n');
+    }
+  });
+  // debug 
+  console.log("[DEBUG] Problem data received for generation:", problemData);
   // create slug from title
   const slug = (problemData.title || '')
     .toLowerCase()

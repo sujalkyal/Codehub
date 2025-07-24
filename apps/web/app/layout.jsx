@@ -1,8 +1,8 @@
-import { ClerkProvider, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 import localFont from "next/font/local";
+import Navbar from "../components/Navbar";
 import "./globals.css";
 
-// Your custom font setup remains the same
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -19,30 +19,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // 1. Wrap your entire HTML structure with ClerkProvider
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
-          {/* 2. Add a header for navigation and user controls */}
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', borderBottom: '1px solid #333' }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}> Codehub</h1>
-            <div>
-              <SignedIn>
-                {/* Mount the UserButton component */}
-                <UserButton  />
-              </SignedIn>
-              <SignedOut>
-                {/* Signed out users get a link to sign in */}
-                <a href="/sign-in" style={{ textDecoration: 'none', color: 'white' }}>Sign In</a>
-              </SignedOut>
-            </div>
-          </header>
-
-          {/* Your page content will be rendered here */}
+          <Navbar />
           <main>
             {children}
           </main>
-
         </body>
       </html>
     </ClerkProvider>

@@ -19,9 +19,17 @@ const payloadSchema = z.object({
 
 router.post("/", async (req, res) => {
   try {
-    const parsed = payloadSchema.parse(JSON.parse(req.body.json));
+    console.log("[DEBUG] req.body.json:", req.body?.json);
+    let parsed;
+    try {
+      parsed = payloadSchema.parse(JSON.parse(req.body.json));
+    } catch (e) {
+      console.error("[DEBUG] Failed to parse payload or schema:", e);
+      return res.status(400).json({ error: "Invalid payload: " + e.message });
+    }
+    console.log("[DEBUG] Parsed payload:", parsed);
     const inputOutputFile = req.files?.input_output?.[0];
-
+    console.log("[DEBUG] inputOutputFile present:", !!inputOutputFile);
     if (!inputOutputFile) {
       return res.status(400).json({ error: "Input file is required." });
     }

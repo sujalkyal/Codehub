@@ -6,7 +6,39 @@ import "react-toastify/dist/ReactToastify.css";
 
 const DIFFICULTY = ["EASY", "MEDIUM", "HARD"];
 const TAGS = [
-  "Array", "String", "Math", "DP", "Graph", "Tree", "Greedy", "Sorting", "Binary Search", "Hashing"
+  "Array",
+  "String",
+  "Math",
+  "Dynamic Programming",
+  "Graph",
+  "Tree",
+  "Greedy",
+  "Sorting",
+  "Binary Search",
+  "Hashing",
+  "Bit Manipulation",
+  "Stack",
+  "Queue",
+  "Heap",
+  "Linked List",
+  "Recursion",
+  "Backtracking",
+  "Two Pointers",
+  "Sliding Window",
+  "Prefix Sum",
+  "Trie",
+  "Segment Tree",
+  "Disjoint Set",
+  "BFS",
+  "DFS",
+  // Tags from test file
+  "implementation",
+  "comparison",
+  "number theory",
+  "loops",
+  "set",
+  "hash map",
+  "prefix sum",
 ];
 
 export default function ContributePage() {
@@ -52,14 +84,14 @@ export default function ContributePage() {
     setLoading(true);
     try {
       const payload = { ...form, tags: form.tags };
+      console.log("[DEBUG] Payload to send:", payload);
       const data = new FormData();
       data.append("json", JSON.stringify(payload));
       data.append("input_output", file);
 
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_BOILERPLATE_API || "http://localhost:4000"}/generate`,
-        data,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        `${process.env.NEXT_PUBLIC_BOILERPLATE_API_URL || "http://localhost:4000/generate"}`,
+        data
       );
       toast.success("Problem created! ID: " + res.data.problemId);
       setForm({
@@ -86,10 +118,14 @@ export default function ContributePage() {
     <div className="min-h-screen bg-[#0B192C] flex flex-col items-center py-10 px-2">
       <ToastContainer />
       <div className="w-full max-w-2xl bg-[#1E3E62] rounded-xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-[#FF6500] mb-6 text-center">Contribute a New Problem</h1>
+        <h1 className="text-3xl font-bold text-[#FF6500] mb-6 text-center">
+          Contribute a New Problem
+        </h1>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Title</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Title
+            </label>
             <input
               name="title"
               value={form.title}
@@ -100,7 +136,9 @@ export default function ContributePage() {
             />
           </div>
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Description</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Description
+            </label>
             <textarea
               name="description"
               value={form.description}
@@ -112,7 +150,9 @@ export default function ContributePage() {
             />
           </div>
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Structure</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Structure
+            </label>
             <input
               name="structure"
               value={form.structure}
@@ -124,7 +164,9 @@ export default function ContributePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#FF6500] font-semibold mb-1">Input Format</label>
+              <label className="block text-[#FF6500] font-semibold mb-1">
+                Input Format
+              </label>
               <input
                 name="inputFormat"
                 value={form.inputFormat}
@@ -135,7 +177,9 @@ export default function ContributePage() {
               />
             </div>
             <div>
-              <label className="block text-[#FF6500] font-semibold mb-1">Output Format</label>
+              <label className="block text-[#FF6500] font-semibold mb-1">
+                Output Format
+              </label>
               <input
                 name="outputFormat"
                 value={form.outputFormat}
@@ -147,7 +191,9 @@ export default function ContributePage() {
             </div>
           </div>
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Constraints</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Constraints
+            </label>
             <input
               name="constraints"
               value={form.constraints}
@@ -159,7 +205,9 @@ export default function ContributePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#FF6500] font-semibold mb-1">Sample Input</label>
+              <label className="block text-[#FF6500] font-semibold mb-1">
+                Sample Input
+              </label>
               <textarea
                 name="sampleInput"
                 value={form.sampleInput}
@@ -171,7 +219,9 @@ export default function ContributePage() {
               />
             </div>
             <div>
-              <label className="block text-[#FF6500] font-semibold mb-1">Sample Output</label>
+              <label className="block text-[#FF6500] font-semibold mb-1">
+                Sample Output
+              </label>
               <textarea
                 name="sampleOutput"
                 value={form.sampleOutput}
@@ -184,7 +234,9 @@ export default function ContributePage() {
             </div>
           </div>
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Difficulty</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Difficulty
+            </label>
             <select
               name="difficulty"
               value={form.difficulty}
@@ -192,15 +244,22 @@ export default function ContributePage() {
               className="w-full px-3 py-2 rounded bg-[#0B192C] text-white border border-[#FF6500] focus:outline-none"
             >
               {DIFFICULTY.map((d) => (
-                <option key={d} value={d}>{d}</option>
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Tags</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Tags
+            </label>
             <div className="flex flex-wrap gap-2">
               {TAGS.map((tag) => (
-                <label key={tag} className="flex items-center text-white bg-[#1E3E62] px-2 py-1 rounded border border-[#FF6500] cursor-pointer">
+                <label
+                  key={tag}
+                  className="flex items-center text-white bg-[#1E3E62] px-2 py-1 rounded border border-[#FF6500] cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     name="tags"
@@ -215,7 +274,9 @@ export default function ContributePage() {
             </div>
           </div>
           <div>
-            <label className="block text-[#FF6500] font-semibold mb-1">Input/Output File</label>
+            <label className="block text-[#FF6500] font-semibold mb-1">
+              Input/Output File
+            </label>
             <input
               type="file"
               accept=".json"

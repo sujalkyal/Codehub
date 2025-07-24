@@ -1,12 +1,62 @@
-{
-  "title": "Sum of Two Numbers",
-  "description": "Add two numbers and return the result.",
-  "structure": "Function: add\nInput: int a, int b\nOutput: int",
-  "inputFormat": "Two integers a and b",
-  "outputFormat": "Single integer: a + b",
-  "constraints": "-10^9 <= a, b <= 10^9",
-  "sampleInput": "2 3",
-  "sampleOutput": "5",
-  "difficulty": "EASY",
-  "tags": ["math", "implementation"]
-}
+[
+  {
+    "title": "Sum of Two Numbers",
+    "description": "Add two numbers and return the result.",
+    "structure": "Function: add\nInput: int a, int b\nOutput: int",
+    "inputFormat": "Two integers a and b",
+    "outputFormat": "Single integer: a + b",
+    "constraints": "-10^9 <= a, b <= 10^9",
+    "sampleInput": "2 3",
+    "sampleOutput": "5",
+    "difficulty": "EASY",
+    "tags": ["math", "implementation"]
+  },
+  {
+    "title": "Maximum of Two Numbers",
+    "description": "Return the greater of two given integers.",
+    "structure": "Function: getMax\nInput: int a, int b\nOutput: int",
+    "inputFormat": "Two integers a and b",
+    "outputFormat": "Single integer: the greater of a and b",
+    "constraints": "-10^9 <= a, b <= 10^9",
+    "sampleInput": "4 9",
+    "sampleOutput": "9",
+    "difficulty": "EASY",
+    "tags": ["comparison", "implementation"]
+  },
+  {
+    "title": "Sum of Digits",
+    "description": "Calculate and return the sum of digits of a given non-negative integer.",
+    "structure": "Function: sumDigits\nInput: long n\nOutput: int",
+    "inputFormat": "A single integer n",
+    "outputFormat": "Single integer: sum of digits of n",
+    "constraints": "0 <= n <= 10^18",
+    "sampleInput": "12345",
+    "sampleOutput": "15",
+    "difficulty": "MEDIUM",
+    "tags": ["math", "number theory", "loops"]
+  },
+  {
+    "title": "Count Distinct Elements",
+    "description": "Return the number of distinct elements in an array.",
+    "structure": "Function: countDistinct\nInput: int n, list<int> arr\nOutput: int",
+    "inputFormat": "An integer n followed by n integers",
+    "outputFormat": "Single integer: number of distinct elements",
+    "constraints": "1 <= n <= 10^5\n-10^9 <= arr[i] <= 10^9",
+    "sampleInput": "6\n1 2 2 3 4 1",
+    "sampleOutput": "4",
+    "difficulty": "MEDIUM",
+    "tags": ["hashing", "set", "arrays"]
+  },
+  {
+    "title": "Longest Subarray with Sum K",
+    "description": "Given an array of integers and an integer K, return the length of the longest subarray that sums to K.",
+    "structure": "Function: longestSubarraySumK\nInput: int n, list<int> arr, int k\nOutput: int",
+    "inputFormat": "An integer n, followed by n integers of the array, followed by integer k",
+    "outputFormat": "Single integer: the length of the longest subarray with sum k",
+    "constraints": "1 <= n <= 10^5\n-10^4 <= arr[i] <= 10^4\n-10^9 <= k <= 10^9",
+    "sampleInput": "5\n1 -1 5 -2 3\n3",
+    "sampleOutput": "4",
+    "difficulty": "HARD",
+    "tags": ["prefix sum", "hash map", "sliding window"]
+  }
+]

@@ -3,9 +3,8 @@
 // This is the dedicated polling endpoint. The frontend will call this
 // repeatedly with a submission ID to check for the final result.
 
-const { NextResponse } = require('next/server');
+import { NextResponse } from 'next/server';
 import prisma from "@repo/db/client";
-
 
 export async function GET(req, { params }) {
   try {
@@ -26,12 +25,12 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
     }
 
-    // 2. Check if all test cases have been processed by the webhook
-    const allFinished = submission.results.every((r) => r.passed !== null);
+    // 2. Check if all test cases have been processed (i.e., are no longer -1)
+    const allFinished = submission.results.every((r) => r.passed !== -1);
 
     // 3. If not all results are in, return the current "Processing" state
     if (!allFinished) {
-      const finishedCount = submission.results.filter(r => r.passed !== null).length;
+      const finishedCount = submission.results.filter(r => r.passed !== -1).length;
       return NextResponse.json({
         statusId: 2, // "Processing"
         message: 'Submission is still being processed.',
@@ -43,7 +42,7 @@ export async function GET(req, { params }) {
     // 4. If all results ARE in, calculate the final status and update the DB
     // This logic runs only once when the last test case is polled.
     if (submission.statusId === 2) { // Check if status is still "Processing"
-        const passedCount = submission.results.filter(r => r.passed === true).length;
+        const passedCount = submission.results.filter(r => r.passed === 1).length;
         const allPassed = passedCount === submission.results.length;
         const finalStatusId = allPassed ? 3 : 4; // 3: Accepted, 4: Wrong Answer
 
@@ -60,7 +59,7 @@ export async function GET(req, { params }) {
         }, { status: 200 });
     } else {
         // If the status is already updated, just return the final submission data
-        const passedCount = submission.results.filter(r => r.passed === true).length;
+        const passedCount = submission.results.filter(r => r.passed === 1).length;
         return NextResponse.json({
             ...submission,
             passedCount: passedCount,

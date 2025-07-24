@@ -3,7 +3,7 @@
 // This is the simplified polling endpoint for the "Run" feature.
 // It returns the results and cleans up the database entry upon completion.
 
-const { NextResponse } = require('next/server');
+import { NextResponse } from 'next/server';
 import prisma from "@repo/db/client";
 
 export async function GET(req, { params }) {
@@ -32,8 +32,8 @@ export async function GET(req, { params }) {
       return NextResponse.json({ status: 'Completed', results: [] }, { status: 200 });
     }
 
-    // 2. Check if all test cases have been processed
-    const allFinished = results.every((r) => r.passed !== null);
+    // 2. Check if all test cases have been processed (are no longer -1)
+    const allFinished = results.every((r) => r.passed !== -1);
 
     // 3. If the run is complete, return the final results and delete the records.
     if (allFinished) {

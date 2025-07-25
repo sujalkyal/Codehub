@@ -6,9 +6,9 @@
 import { NextResponse } from 'next/server';
 import prisma from "@repo/db/client";
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
-    const { submitId } = params;
+    const { submitId } = await context.params;
     const numericId = parseInt(submitId);
     console.log(`Polling for submission ID: ${numericId}`);
     if (isNaN(numericId)) {

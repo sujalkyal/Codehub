@@ -65,7 +65,7 @@ model ProblemBoilerplate {
 //   isSample       Boolean   @default(false)
 
 //   problem        Problem   @relation(fields: [problemId], references: [id])
-//   results        SubmissionTestCaseResult[]
+//   results        submissionTestCaseResults[]
 // }
 
 model Tag {
@@ -115,17 +115,41 @@ model Submission {
   user           User       @relation(fields: [userId], references: [id])
   problem        Problem    @relation(fields: [problemId], references: [id])
   language       Language   @relation(fields: [languageId], references: [id])
-  results        SubmissionTestCaseResult[]
+  results        submissionTestCaseResults[]
 }
 
-model SubmissionTestCaseResult {
+// model submissionTestCaseResults {
+//   id           Int       @id @default(autoincrement())
+//   submissionId Int
+//   // testCaseId   Int
+//   passed String // -1 for processing, 0 for failed, 1 for passed
+
+//   submission   Submission @relation(fields: [submissionId], references: [id])
+//   // testCase     TestCase   @relation(fields: [testCaseId], references: [id])
+
+//   // @@unique([submissionId])
+// }
+
+// model submissionTestCaseResultss {
+//   id           Int       @id @default(autoincrement())
+//   submissionId Int
+//   // testCaseId   Int
+//   passed Int // -1 for processing, 0 for failed, 1 for passed
+
+//   submission   Submission @relation(fields: [submissionId], references: [id])
+//   // testCase     TestCase   @relation(fields: [testCaseId], references: [id])
+
+//   // @@unique([submissionId])
+// }
+
+model submissionTestCaseResults {
   id           Int       @id @default(autoincrement())
   submissionId Int
   // testCaseId   Int
-  passed Int @default(-1)
+  passed Int // -1 for processing, 0 for failed, 1 for passed
 
   submission   Submission @relation(fields: [submissionId], references: [id])
   // testCase     TestCase   @relation(fields: [testCaseId], references: [id])
 
-  @@unique([submissionId])
+  // @@unique([submissionId])
 }

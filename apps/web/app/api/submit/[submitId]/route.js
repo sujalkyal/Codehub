@@ -8,9 +8,9 @@ import prisma from "@repo/db/client";
 
 export async function GET(req, { params }) {
   try {
-    const { submissionId } = params;
-    const numericId = parseInt(submissionId, 10);
-
+    const { submitId } = params;
+    const numericId = parseInt(submitId);
+    console.log(`Polling for submission ID: ${numericId}`);
     if (isNaN(numericId)) {
       return NextResponse.json({ error: 'Invalid submission ID' }, { status: 400 });
     }
@@ -18,7 +18,7 @@ export async function GET(req, { params }) {
     // 1. Fetch the submission and its related test case results
     const submission = await prisma.submission.findUnique({
       where: { id: numericId },
-      include: { results: true }, // 'results' is the relation to SubmissionTestCaseResult
+      include: { results: true }, // 'results' is the relation to submissionTestCaseResults
     });
 
     if (!submission) {

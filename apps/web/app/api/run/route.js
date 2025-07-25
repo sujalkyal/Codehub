@@ -7,20 +7,15 @@ import prisma from "@repo/db/client";
 import { downloadFile } from "@repo/s3-client/client"; // Assuming this is the correct import path
 
 const runSchema = z.object({
-  userId: z.number(),
+  userId: z.string(),
   problemSlug: z.string(),
   languageId: z.number(),
   code: z.string(),
 });
 
 // ================== REAL S3 FETCHING LOGIC ==================
-/**
- * Fetches and parses the test case JSON file from S3 for a given problem slug.
- * @param {string} slug - The unique slug for the problem (e.g., "two-sum").
- * @returns {Promise<Array<{input: string, output: string}>>} A promise that resolves to an array of test cases.
- */
 async function getTestCasesFromS3(slug) {
-  const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  const bucketName = process.env.BUCKET_NAME;
   const key = `problems/${slug}/input_output.json`;
 
   console.log(`Fetching real test cases from S3: s3://${bucketName}/${key}`);
@@ -74,12 +69,12 @@ export async function POST(req) {
       },
     });
 
-    // 2. Create SubmissionTestCaseResult records and prepare the detailed map for the frontend
+    // 2. Create submissionTestCaseResults records and prepare the detailed map for the frontend
     const testCaseMap = [];
     const judge0Promises = [];
 
     for (const testCase of sampleTestCases) {
-      const resultRecord = await prisma.submissionTestCaseResult.create({
+      const resultRecord = await prisma.submissionTestCaseResults.create({
         data: {
           passed: -1, // -1 indicates "Processing"
           submission: {
@@ -91,15 +86,15 @@ export async function POST(req) {
       });
 
       testCaseMap.push({
-        submissionTestCaseResultId: resultRecord.id,
+        submissionTestCaseResultsId: resultRecord.id,
         input: testCase.input,
         output: testCase.output,
       });
 
-      const callbackUrl = `${process.env.WEBHOOK_URL}/api/webhook?submissionTestCaseResultId=${resultRecord.id}`;
+      const callbackUrl = `${process.env.WEBHOOK_URL}?submissionTestCaseResultsId=${resultRecord.id}`;
       judge0Promises.push(
         axios.post(
-          `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=false`,
+          `${process.env.JUDGE0_URL}`,
           {
             source_code: code,
             language_id: languageId,

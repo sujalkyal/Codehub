@@ -7,7 +7,7 @@ import axios from 'axios';
 import { downloadFile } from "@repo/s3-client/client";
 
 const submissionSchema = z.object({
-  userId: z.number(),
+  userId: z.string(),
   problemSlug: z.string(),
   languageId: z.number(),
   code: z.string(),
@@ -71,19 +71,27 @@ export async function POST(req) {
       },
     });
     console.log(`Created submission with ID: ${submission.id}`);
+    console.log("submission.id =", submission.id, "typeof =", typeof submission.id);
 
-    // 2. Create SubmissionTestCaseResult records and dispatch jobs
+    // const resultrr = await prisma.submissionTestCaseResults.create({
+    //   data: {
+    //     passed: -1,
+    //     submissionId: parseInt(submission.id), // FIX: Use direct ID assignment
+    //   },
+    // });
+    // console.log(`Created result record with ID: ${resultr.id}`);
+    // 2. Create submissionTestCaseResults records and dispatch jobs
     const judge0Promises = testCases.map(async (testCase) => {
       // The ID is created FIRST
-      const resultRecord = await prisma.submissionTestCaseResult.create({
+      const resultRecord = await prisma.submissionTestCaseResults.create({
         data: {
-          passed: -1,
-          submissionId: submission.id, // FIX: Use direct ID assignment
+          submissionId: parseInt(submission.id), // FIX: Use direct ID assignment
+          passed: -1, // -1 indicates "Processing"
         },
       });
       console.log(`Created result record with ID: ${resultRecord.id}`);
       // The callback URL uses the ID we just created
-      const callbackUrl = `${process.env.WEBHOOK_URL}/api/webhook?submissionTestCaseResultId=${resultRecord.id}`;
+      const callbackUrl = `${process.env.WEBHOOK_URL}?submissionTestCaseResultsId=${resultRecord.id}`;
       
       console.log(`Dispatching to Judge0 with callback: ${callbackUrl}`);
 

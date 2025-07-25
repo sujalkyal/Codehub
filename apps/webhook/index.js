@@ -4,7 +4,7 @@ import webhookRoute from "./app/api/webhook/route.js"; // Express-compatible rou
 const app = express();
 app.use(express.json());
 
-// All Judge0 webhooks should POST to /webhook?submissionTestCaseResultId=...
+// All Judge0 webhooks should POST to /webhook?submissionTestCaseResultsId=...
 app.use("/webhook", webhookRoute);
 
 const PORT = process.env.PORT || 5000;

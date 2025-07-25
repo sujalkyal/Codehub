@@ -9,19 +9,19 @@ import prisma from "@repo/db/client";
 export async function GET(req, { params }) {
   try {
     const { runId } = params;
-    const numericId = parseInt(runId, 10);
+    const numericId = parseInt(runId);
 
     if (isNaN(numericId)) {
       return NextResponse.json({ error: 'Invalid Run ID' }, { status: 400 });
     }
 
     // 1. Fetch only the results for the given run session
-    const results = await prisma.submissionTestCaseResult.findMany({
+    const results = await prisma.submissionTestCaseResults.findMany({
       where: {
         submissionId: numericId,
       },
       select: {
-        id: true, // This is the submissionTestCaseResultId
+        id: true, // This is the submissionTestCaseResultsId
         passed: true,
       },
     });
@@ -38,7 +38,7 @@ export async function GET(req, { params }) {
     // 3. If the run is complete, return the final results and delete the records.
     if (allFinished) {
       // IMPORTANT: After returning the results, we trigger a delete operation.
-      // This cleans up the temporary Submission and SubmissionTestCaseResult records.
+      // This cleans up the temporary Submission and submissionTestCaseResults records.
       // This assumes a cascading delete is set up in your Prisma schema.
       await prisma.submission.delete({
         where: {

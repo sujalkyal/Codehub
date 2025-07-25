@@ -15,18 +15,18 @@ const judge0CallbackSchema = z.object({
   token: z.string(),
 });
 
-// POST /webhook?submissionTestCaseResultId=...
+// POST /webhook?submissionTestCaseResultsId=...
 router.post("/", async (req, res) => {
-  const submissionTestCaseResultId = req.query.submissionTestCaseResultId;
+  const submissionTestCaseResultsId = req.query.submissionTestCaseResultsId;
 
-  if (!submissionTestCaseResultId) {
-    console.error("Missing submissionTestCaseResultId");
-    return res.status(400).json({ error: "Missing submissionTestCaseResultId" });
+  if (!submissionTestCaseResultsId) {
+    console.error("Missing submissionTestCaseResultsId");
+    return res.status(400).json({ error: "Missing submissionTestCaseResultsId" });
   }
 
-  const numericId = parseInt(submissionTestCaseResultId, 10);
+  const numericId = parseInt(submissionTestCaseResultsId);
   if (isNaN(numericId)) {
-    console.error("Invalid ID format:", submissionTestCaseResultId);
+    console.error("Invalid ID format:", submissionTestCaseResultsId);
     return res.status(400).json({ error: "Invalid ID format" });
   }
 
@@ -38,9 +38,9 @@ router.post("/", async (req, res) => {
     }
 
     const { status } = parsed.data;
-    const passed = status.id === 3;
+    const passed = (status.id === 3) ? parseInt(1) : parseInt(0); // Assuming 3 means "Accepted", otherwise "Wrong Answer"
 
-    await prisma.submissionTestCaseResult.update({
+    await prisma.submissionTestCaseResults.update({
       where: { id: numericId },
       data: { passed },
     });

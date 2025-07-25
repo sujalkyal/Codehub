@@ -98,13 +98,13 @@ CREATE TABLE "Submission" (
 );
 
 -- CreateTable
-CREATE TABLE "SubmissionTestCaseResult" (
+CREATE TABLE "submissionTestCaseResults" (
     "id" SERIAL NOT NULL,
     "submissionId" INTEGER NOT NULL,
     "testCaseId" INTEGER NOT NULL,
     "passed" BOOLEAN NOT NULL,
 
-    CONSTRAINT "SubmissionTestCaseResult_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "submissionTestCaseResults_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -120,7 +120,7 @@ CREATE UNIQUE INDEX "ProblemTag_problemId_tagId_key" ON "ProblemTag"("problemId"
 CREATE UNIQUE INDEX "Language_judge0Id_key" ON "Language"("judge0Id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SubmissionTestCaseResult_submissionId_testCaseId_key" ON "SubmissionTestCaseResult"("submissionId", "testCaseId");
+CREATE UNIQUE INDEX "submissionTestCaseResults_submissionId_testCaseId_key" ON "submissionTestCaseResults"("submissionId", "testCaseId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
@@ -144,7 +144,7 @@ ALTER TABLE "Submission" ADD CONSTRAINT "Submission_problemId_fkey" FOREIGN KEY 
 ALTER TABLE "Submission" ADD CONSTRAINT "Submission_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "Language"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SubmissionTestCaseResult" ADD CONSTRAINT "SubmissionTestCaseResult_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "Submission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "submissionTestCaseResults" ADD CONSTRAINT "submissionTestCaseResults_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "Submission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SubmissionTestCaseResult" ADD CONSTRAINT "SubmissionTestCaseResult_testCaseId_fkey" FOREIGN KEY ("testCaseId") REFERENCES "TestCase"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "submissionTestCaseResults" ADD CONSTRAINT "submissionTestCaseResults_testCaseId_fkey" FOREIGN KEY ("testCaseId") REFERENCES "TestCase"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

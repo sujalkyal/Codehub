@@ -85,7 +85,7 @@ export default function ProblemSolvePage() {
         (b) => b.language.name.toLowerCase() === selectedLang.name.toLowerCase()
       );
       const res = await axios.post("/api/run", {
-        userId: 1, // TODO: Replace with real user id
+        userId: "1", // TODO: Replace with real user id
         problemSlug: problemId,
         languageId: langBoiler.language.id,
         code,
@@ -106,7 +106,7 @@ export default function ProblemSolvePage() {
         (b) => b.language.name.toLowerCase() === selectedLang.name.toLowerCase()
       );
       const res = await axios.post("/api/submit", {
-        userId: 1, // TODO: Replace with real user id
+        userId: "1", // TODO: Replace with real user id
         problemSlug: problemId,
         languageId: langBoiler.language.id,
         code,

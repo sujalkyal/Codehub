@@ -40,12 +40,12 @@ export async function GET(req, { params }) {
       // IMPORTANT: After returning the results, we trigger a delete operation.
       // This cleans up the temporary Submission and submissionTestCaseResults records.
       // This assumes a cascading delete is set up in your Prisma schema.
-      await prisma.submission.delete({
-        where: {
-          id: numericId,
-        },
-      });
-      console.log(`Cleaned up Run Session with ID: ${numericId}`);
+      // await prisma.submission.delete({
+      //   where: {
+      //     id: numericId,
+      //   },
+      // });
+      // console.log(`Cleaned up Run Session with ID: ${numericId}`);
       
       return NextResponse.json({
         status: 'Completed',

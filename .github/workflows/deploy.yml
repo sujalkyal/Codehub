@@ -28,14 +28,14 @@ jobs:
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
           ssh $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/$EC2_USER/Codehub
+            cd ~/Codehub
             git pull origin master
 
             # Write .env from secret
             echo "$ENV_FILE_CONTENT" > .env
 
             # Build and restart containers
-            docker-compose down
-            docker-compose build --no-cache
-            docker-compose up -d --remove-orphans
+            docker compose down
+            docker compose build --no-cache
+            docker compose up -d --remove-orphans
           EOF

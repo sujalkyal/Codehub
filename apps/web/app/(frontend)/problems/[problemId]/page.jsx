@@ -22,7 +22,6 @@ export default function ProblemSolvePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pollingRef = useRef();
 
-  // Fetch problem details
   useEffect(() => {
     setLoading(true);
     axios
@@ -41,7 +40,6 @@ export default function ProblemSolvePage() {
       });
   }, [problemId]);
 
-  // Update code when language changes
   useEffect(() => {
     if (!problem) return;
     const boiler = problem.boilerplates.find(
@@ -50,34 +48,49 @@ export default function ProblemSolvePage() {
     setCode(boiler ? boiler.code : "");
   }, [selectedLang]);
 
-  // Polling for Run
   const pollRun = (runId) => {
+    let timeoutId;
+
     pollingRef.current = setInterval(async () => {
       const res = await axios.get(`/api/run/${runId}`);
       if (res.data.status === "Completed" || res.data.results) {
+        clearInterval(pollingRef.current);
+        clearTimeout(timeoutId);
         setRunResult((prev) => ({
           ...res.data,
           testCases: prev?.testCases || [],
         }));
-        clearInterval(pollingRef.current);
         setIsRunning(false);
       }
-    }, 1500);
+    }, 3000);
+
+    timeoutId = setTimeout(() => {
+      clearInterval(pollingRef.current);
+      setRunResult({ error: "Time Limit Exceeded" });
+      setIsRunning(false);
+    }, 30000);
   };
 
-  // Polling for Submit
   const pollSubmit = (submitId) => {
+    let timeoutId;
+
     pollingRef.current = setInterval(async () => {
       const res = await axios.get(`/api/submit/${submitId}`);
       if (res.data.statusId === 3 || res.data.statusId === 4) {
-        setSubmitResult(res.data);
         clearInterval(pollingRef.current);
+        clearTimeout(timeoutId);
+        setSubmitResult(res.data);
         setIsSubmitting(false);
       }
-    }, 2000);
+    }, 3000);
+
+    timeoutId = setTimeout(() => {
+      clearInterval(pollingRef.current);
+      setSubmitResult({ error: "Time Limit Exceeded" });
+      setIsSubmitting(false);
+    }, 30000);
   };
 
-  // Run handler
   const handleRun = async () => {
     setIsRunning(true);
     setRunResult(null);
@@ -86,12 +99,12 @@ export default function ProblemSolvePage() {
         (b) => b.language.name.toLowerCase() === selectedLang.name.toLowerCase()
       );
       const res = await axios.post("/api/run", {
-        userId: "1", // Replace with real user ID
+        userId: "1",
         problemSlug: problemId,
         languageId: langBoiler.language.id,
         code,
       });
-      setRunResult({ testCases: res.data.testCases }); // Save test cases initially
+      setRunResult({ testCases: res.data.testCases });
       pollRun(res.data.runId);
     } catch (e) {
       setRunResult({ error: "Run failed" });
@@ -99,7 +112,6 @@ export default function ProblemSolvePage() {
     }
   };
 
-  // Submit handler
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitResult(null);
@@ -108,7 +120,7 @@ export default function ProblemSolvePage() {
         (b) => b.language.name.toLowerCase() === selectedLang.name.toLowerCase()
       );
       const res = await axios.post("/api/submit", {
-        userId: "1", // Replace with real user ID
+        userId: "1",
         problemSlug: problemId,
         languageId: langBoiler.language.id,
         code,
@@ -125,7 +137,6 @@ export default function ProblemSolvePage() {
 
   return (
     <div className="min-h-screen bg-[#0B192C] flex flex-col md:flex-row">
-      {/* Problem Details */}
       <div className="md:w-1/2 w-full p-8 bg-[#1E3E62] text-white flex flex-col gap-4 border-r border-[#0B192C]">
         <h1 className="text-3xl font-bold text-[#FF6500]">{problem.title}</h1>
         <div className="flex gap-2 mb-2">
@@ -156,7 +167,6 @@ export default function ProblemSolvePage() {
         </div>
       </div>
 
-      {/* Code Editor & Actions */}
       <div className="md:w-1/2 w-full p-8 flex flex-col gap-4 bg-[#0B192C]">
         <div className="flex gap-4 items-center mb-2">
           <label className="text-[#FF6500] font-semibold">Language:</label>
@@ -198,7 +208,6 @@ export default function ProblemSolvePage() {
           </button>
         </div>
 
-        {/* Run Result */}
         {runResult && (
           <div className="mt-4 bg-[#1E3E62] p-4 rounded text-white">
             <h3 className="font-bold text-[#FF6500] mb-2">Run Result</h3>
@@ -251,7 +260,6 @@ export default function ProblemSolvePage() {
           </div>
         )}
 
-        {/* Submit Result */}
         {submitResult && (
           <div className="mt-4 bg-[#1E3E62] p-4 rounded text-white">
             <h3 className="font-bold text-[#FF6500] mb-2">Submit Result</h3>

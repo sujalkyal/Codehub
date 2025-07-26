@@ -49,7 +49,21 @@ export async function POST(req) {
     if (!problem) {
         return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
+    // This is the only new block of code.
+    const boilerplate = await prisma.problemBoilerplate.findFirst({
+        where: {
+            problemId: problem.id,
+            languageId: languageId,
+        }
+    });
 
+    if (!boilerplate || !boilerplate.fullcode || !boilerplate.code) {
+      console.warn(`Boilerplate not found for problem: ${problemSlug}, language ID: ${languageId}`);
+        return NextResponse.json({ error: 'Boilerplate for this language not found.' }, { status: 404 });
+    }
+
+    const finalCode = boilerplate.fullcode.replace(boilerplate.code, code);
+    console.log(`Using boilerplate for language ID ${languageId}:`, finalCode);
     const allTestCases = await getTestCasesFromS3(problemSlug);
     const sampleTestCases = allTestCases.slice(0, 3);
 
@@ -94,7 +108,7 @@ export async function POST(req) {
       const callbackUrl = `${process.env.WEBHOOK_URL}?submissionTestCaseResultsId=${resultRecord.id}`;
       judge0Promises.push(
         axios.post(
-          `${process.env.JUDGE0_URL}`,
+          `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
           {
             source_code: code,
             language_id: languageId,

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 
 const LANGUAGES = [
-  { name: "C++", id: 1 },
+  { name: "C++", id: 54 },
   { name: "Java", id: 2 },
   { name: "Python", id: 3 },
 ];

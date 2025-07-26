@@ -1,5 +1,3 @@
-// apps/web/app/api/submissions/route.js
-
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from "@repo/db/client"; // Using your shared prisma instance
@@ -53,12 +51,30 @@ export async function POST(req) {
     }
     console.log(`Problem found: ${problem.title}`);
 
+    // ================== NEW LOGIC STARTS HERE ==================
+    // This is the only new block of code.
+    const boilerplate = await prisma.problemBoilerplate.findFirst({
+        where: {
+            problemId: problem.id,
+            languageId: languageId,
+        }
+    });
+
+    if (!boilerplate || !boilerplate.fullcode || !boilerplate.code) {
+      console.warn(`Boilerplate not found for problem: ${problemSlug}, language ID: ${languageId}`);
+        return NextResponse.json({ error: 'Boilerplate for this language not found.' }, { status: 404 });
+    }
+
+    const finalCode = boilerplate.fullcode.replace(boilerplate.code, code);
+    console.log(`Using boilerplate for language ID ${languageId}:`, finalCode);
+    // ================== NEW LOGIC ENDS HERE ==================
+
     const testCases = await getTestCasesFromS3(problemSlug);
     if (testCases.length === 0) {
       return NextResponse.json({ error: 'No test cases found' }, { status: 404 });
     }
     console.log(`Fetched ${testCases.length} test cases for problem: ${problemSlug}`);
-
+    console.log("testCases =", languageId);
     // 1. Create the main Submission record
     const submission = await prisma.submission.create({
       data: {
@@ -80,12 +96,23 @@ export async function POST(req) {
     //   },
     // });
     // console.log(`Created result record with ID: ${resultr.id}`);
+    const temp = 54
+    const rrrr = await axios.post(
+  `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
+  {
+    source_code: finalCode,
+    language_id: temp,
+    stdin: "6 9",
+    expected_output: "14\n"
+  }
+);
+console.log("rrrr =", rrrr.data);
     // 2. Create submissionTestCaseResults records and dispatch jobs
     const judge0Promises = testCases.map(async (testCase) => {
       // The ID is created FIRST
       const resultRecord = await prisma.submissionTestCaseResults.create({
         data: {
-          submissionId: parseInt(submission.id), // FIX: Use direct ID assignment
+          submissionId: submission.id,
           passed: -1, // -1 indicates "Processing"
         },
       });
@@ -94,12 +121,12 @@ export async function POST(req) {
       const callbackUrl = `${process.env.WEBHOOK_URL}?submissionTestCaseResultsId=${resultRecord.id}`;
       
       console.log(`Dispatching to Judge0 with callback: ${callbackUrl}`);
-
+      
       // Return the axios post promise
       return axios.post(
-        `${process.env.JUDGE0_URL}`,
+        `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
         {
-          source_code: code,
+          source_code: finalCode, // CHANGED: This now sends the merged code
           language_id: languageId,
           stdin: testCase.input,
           expected_output: testCase.output,

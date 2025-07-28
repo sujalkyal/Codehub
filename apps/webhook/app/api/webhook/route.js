@@ -16,7 +16,7 @@ const judge0CallbackSchema = z.object({
 });
 
 // POST /webhook?submissionTestCaseResultsId=...
-router.post("/", async (req, res) => {
+router.put("/", async (req, res) => {
   const submissionTestCaseResultsId = req.query.submissionTestCaseResultsId;
 
   if (!submissionTestCaseResultsId) {

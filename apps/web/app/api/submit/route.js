@@ -96,17 +96,6 @@ export async function POST(req) {
     //   },
     // });
     // console.log(`Created result record with ID: ${resultr.id}`);
-    const temp = 54
-    const rrrr = await axios.post(
-  `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
-  {
-    source_code: finalCode,
-    language_id: temp,
-    stdin: "6 9",
-    expected_output: "14\n"
-  }
-);
-console.log("rrrr =", rrrr.data);
     // 2. Create submissionTestCaseResults records and dispatch jobs
     const judge0Promises = testCases.map(async (testCase) => {
       // The ID is created FIRST
@@ -127,7 +116,7 @@ console.log("rrrr =", rrrr.data);
         `${process.env.JUDGE0_URL}/submissions?base64_encoded=false&wait=true`,
         {
           source_code: finalCode, // CHANGED: This now sends the merged code
-          language_id: languageId,
+          language_id: parseInt(54),
           stdin: testCase.input,
           expected_output: testCase.output,
           callback_url: callbackUrl,

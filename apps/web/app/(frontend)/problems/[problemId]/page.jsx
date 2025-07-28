@@ -88,7 +88,7 @@ export default function ProblemSolvePage() {
       clearInterval(pollingRef.current);
       setSubmitResult({ error: "Time Limit Exceeded" });
       setIsSubmitting(false);
-    }, 30000);
+    }, 600000);
   };
 
   const handleRun = async () => {
@@ -119,10 +119,11 @@ export default function ProblemSolvePage() {
       const langBoiler = problem.boilerplates.find(
         (b) => b.language.name.toLowerCase() === selectedLang.name.toLowerCase()
       );
+      const temp = 54;
       const res = await axios.post("/api/submit", {
         userId: "1",
         problemSlug: problemId,
-        languageId: langBoiler.language.id,
+        languageId: temp,
         code,
       });
       pollSubmit(res.data.submissionId);

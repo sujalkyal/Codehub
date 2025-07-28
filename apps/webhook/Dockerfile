@@ -10,6 +10,8 @@ COPY ../../packages ./packages
 # Install all dependencies incl. workspaces
 RUN npm install --legacy-peer-deps
 
+RUN cd packages/db && npx prisma generate
+
 # --- Production stage ---
 FROM node:18-alpine AS runner
 WORKDIR /app

@@ -19,6 +19,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
 COPY . .
 
+RUN cd packages/db && npx prisma generate
+
 RUN npm run build
 
 # --- Production stage ---
